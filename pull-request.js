@@ -1,14 +1,63 @@
+var fs = require('fs');
 var https = require('https');
 var readline = require('readline');
 
-var defaultoptions = {
-	host: 'api.github.com',
-	method: 'GET',
-	auth: "octocat:githubpass",
-	headers: {
-		'Accept': 'application/vnd.github.v3+json',
-		'User-Agent': 'iojs'
-	}
+var GithubInterface = function GithubInterface() {
+	var options = {
+		host: 'api.github.com',
+		method: 'GET',
+		headers: {
+			'Accept': 'application/vnd.github.v3+json',
+			'User-Agent': 'iojs'
+		}
+	};
+	var request = function request(path) {
+		options.path = path;
+		return new Promise(function(resolve, reject) {
+			https.request(options, function(res) {
+				console.log(`Request to '${options.path}'`);
+				var body = '';
+				res.setEncoding('utf8');
+				res.on('data', function (chunk) {
+					body += chunk;
+				});
+				res.on('error', function (error) {
+					console.error(error);
+					reject(new Error(error));
+				});
+				res.on('end', function() {
+					if(body == '') {
+						body = '{}';
+					}
+					var json = JSON.parse(body);
+					if(res.statusCode === 403) {
+						reject(new Error(json.message));
+					}
+					var links = res.headers.link;
+					if(res.headers.link) {
+						var matchnextpath = links.match(/<([^>]*)>; rel="next"/);
+						if(matchnextpath !== null) {
+							var nextpath = matchnextpath[1];
+							console.log(`Need more pages from '${path}'`);
+							var nextpagegi = new GithubInterface();
+							nextpagegi.request(nextpath)
+							.then(function(nextpage) {
+								var newjson = json.concat(nextpage);
+								resolve(newjson);
+							});
+						} else {
+							resolve(json);
+						}
+					} else {
+						resolve(json);
+					}
+				});
+			}).end();
+		});
+	};
+	return {
+		request: request
+	};
 };
 
 var fields = [
@@ -25,88 +74,109 @@ var fields = [
 'merged'
 ];
 
-console.log(fields.join());
-
-var askinput = function(message) {
-	return new Promise(function(resolve, reject) {
-		var rl = readline.createInterface({
-			input: process.stdin,
-			output: process.stdout
+var Configuration = function Configuration() {
+	var configurationpath = 'health.json';
+	var configuration = {};
+	var setfromfile = function setfromfile() {
+		return new Promise(function(resolve, reject) {
+			var options = {
+				flags: 'r',
+				encoding: 'utf8',
+				autoClose: true
+			};
+			var rs = fs.createReadStream(configurationpath, options);
+			var data = '';
+			rs.on('data', function(chunk) {
+				data += chunk;
+			});
+			rs.on('error', function(error) {
+				resolve(false);
+			});
+			rs.on('end', function() {
+				configuration = JSON.parse(data);
+				resolve(true);
+			});
 		});
-		rl.question(message, function(answer) {
-			resolve(answer);
-			rl.close();
+	};
+	var askinput = function askinput(message) {
+		return new Promise(function(resolve, reject) {
+			var rl = readline.createInterface({
+				input: process.stdin,
+				output: process.stdout
+			});
+			rl.question(message, function(answer) {
+				resolve(answer);
+				rl.close();
+			});
 		});
-	});
+	};
+	var set = function set(message, fieldname) {
+		return new Promise(function(resolve, reject) {
+			if(configuration[fieldname] !== undefined) {
+				resolve();
+			} else {
+				return askinput(message)
+				.then(function(fieldvalue) {
+					configuration[fieldname] = fieldvalue;
+					resolve();
+				});
+			}
+		});
+	};
+	var setcredentials = function setcredentials() {
+		return set("Give your credentials for a Github account [username:password]? ", 'credentials');
+	};
+	var setaccount = function setaccount() {
+		return set("Which account would you like to analyze? ", 'account');
+	};
+	var getcredentials = function getcredentials() {
+		return configuration.credentials;
+	};
+	var getaccount = function getaccount() {
+		return configuration.account;
+	};
+	return {
+		setfromfile: setfromfile,
+		setcredentials: setcredentials,
+		setaccount: setaccount,
+		getcredentials: getcredentials,
+		getaccount: getaccount
+	};
 };
 
-var askjson = function(path) {
-	return new Promise(function(resolve, reject) {
-		var options = defaultoptions;
-		options.path = path;
-		https.request(options, function(res) {
-			console.log(`Request to '${path}'`);
-			var body = '';
-			res.setEncoding('utf8');
-			res.on('data', function (chunk) {
-				body += chunk;
-			});
-			res.on('error', function (error) {
-				console.error(error);
-				reject(new Error(error));
-			});
-			res.on('end', function() {
-				if(body == '') {
-					body = '{}';
-				}
-				var json = JSON.parse(body);
-				var links = res.headers.link;
-				if(res.headers.link) {
-					var matchnextpath = links.match(/<([^>]*)>; rel="next"/);
-					if(matchnextpath !== null) {
-						var nextpath = matchnextpath[1];
-						console.log(`Need more pages from '${path}'`);
-						askjson(nextpath)
-						.then(function(nextpage) {
-							var newjson = json.concat(nextpage);
-							resolve(newjson);
-						});
-					} else {
-						resolve(json);
-					}
-				} else {
-					resolve(json);
-				}
-			});
-		}).end();
-	});
-};
+var configuration = new Configuration();
 
-askinput("Give your credentials for username:password for Github? ")
-.then(function(credential) {
-	defaultoptions.auth = credential;
-	return askinput("Which account would you like to analyze? ");
+var reporterror = function reporterror(error) {
+	console.error(error);
+}
+
+configuration.setfromfile()
+.then(function() {
+	return configuration.setcredentials();
 })
-.then(function(account) {
-	var path = '/users/' + account + '/repos';
-	return askjson(path);
+.then(function() {
+	return configuration.setaccount();
+})
+.then(function() {
+	var path = '/users/' + configuration.getaccount() + '/repos';
+	var reposgi = new GithubInterface();
+	return reposgi.request(path);
 })
 .then(function(repos) {
 	var requests = [];
 	for(var repo of repos) {
-		// TO REMOVE
-		if(repo.name !== 'xwiki-rendering') {
+		if(repo.name !== 'xwiki-commons') {
 			continue;
 		}
 		if(!repo.fork) {
 			var path = '/repos/' + repo.owner.login + '/' + repo.name + '/pulls?state=all';
-			requests.push(askjson(path));
+			var pullsgi = new GithubInterface();
+			requests.push(pullsgi.request(path));
 		}
 	}
 	return Promise.all(requests);
-})
+}, reporterror)
 .then(function(pullsperrepo) {
-	var requests = [];
 	for(var pulls of pullsperrepo) {
 		for(var pull of pulls) {
 			var line = {};
@@ -124,10 +194,12 @@ askinput("Give your credentials for username:password for Github? ")
 			} else {
 				line['merged'] = true;
 			}
+			var commentsgi = new GithubInterface();
+			var commitsgi = new GithubInterface();
 			Promise.all([
 					line,
-					askjson(pull.review_comments_url),
-					askjson(pull.commits_url)
+					commentsgi.request(pull.review_comments_url),
+					commitsgi.request(pull.commits_url)
 			])
 				.then(function(prdetails) {
 					var line = prdetails[0];
@@ -140,7 +212,7 @@ askinput("Give your credentials for username:password for Github? ")
 						result.push(line[key]);
 					}
 					console.log(result.join());
-				});
+				}, reporterror);
 		};
 	}
-});
+}, reporterror);
