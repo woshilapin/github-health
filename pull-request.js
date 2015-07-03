@@ -20,6 +20,7 @@ var fields = [
 var configuration = new Configuration();
 var csv = new CSVlogger('pulls.csv', fields);
 var csvinit = csv.init();
+var gi;
 
 var reporterror = function reporterror(error) {
 	console.error(error);
@@ -30,23 +31,21 @@ configuration.setfromfile()
 	return configuration.setcredentials();
 })
 .then(function() {
+	gi = new GithubInterface(configuration.getcredentials());
 	return configuration.setaccount();
 })
 .then(function() {
 	var path = '/users/' + configuration.getaccount() + '/repos';
-	var reposgi = new GithubInterface();
-	return reposgi.request(path);
+	var reposgi = gi.createRequest(path);
+	return reposgi.send();
 })
 .then(function(repos) {
 	var requests = [];
 	for(var repo of repos) {
-		if(repo.name !== 'xwiki-commons') {
-			continue;
-		}
 		if(!repo.fork) {
 			var path = '/repos/' + repo.owner.login + '/' + repo.name + '/pulls?state=all';
-			var pullsgi = new GithubInterface();
-			requests.push(pullsgi.request(path));
+			var pullsgi = gi.createRequest(path);
+			requests.push(pullsgi.send());
 		}
 	}
 	return Promise.all(requests);
@@ -69,12 +68,12 @@ configuration.setfromfile()
 			} else {
 				line['merged'] = true;
 			}
-			var commentsgi = new GithubInterface();
-			var commitsgi = new GithubInterface();
+			var commentsgi = gi.createRequest(pull.review_comments_url);
+			var commitsgi = gi.createRequest(pull.commits_url);
 			Promise.all([
 					line,
-					commentsgi.request(pull.review_comments_url),
-					commitsgi.request(pull.commits_url)
+					commentsgi.send(),
+					commitsgi.send()
 			])
 				.then(function(prdetails) {
 					var line = prdetails[0];
