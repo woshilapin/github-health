@@ -18,7 +18,7 @@ module.exports = function CSVlogger(path, fields) {
 		newline();
 	};
 	var newline = function newline() {
-		file.write('\n\r');
+		file.write('\n');
 	}
 	var pushline = function pushline(line) {
 		if(line instanceof Array) {
