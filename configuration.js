@@ -17,7 +17,7 @@ module.exports = function Configuration() {
 				data += chunk;
 			});
 			rs.on('error', function(error) {
-				resolve(false);
+				reject(error);
 			});
 			rs.on('end', function() {
 				configuration = JSON.parse(data);
@@ -26,7 +26,7 @@ module.exports = function Configuration() {
 		});
 	};
 	var askinput = function askinput(message) {
-		return new Promise(function(resolve, reject) {
+		return new Promise(function(resolve) {
 			var rl = readline.createInterface({
 				input: process.stdin,
 				output: process.stdout
@@ -37,7 +37,7 @@ module.exports = function Configuration() {
 			});
 		});
 	};
-	var set = function set(message, fieldname) {
+	var setproperty = function setproperty(message, fieldname) {
 		return new Promise(function(resolve, reject) {
 			if(configuration[fieldname] !== undefined) {
 				resolve();
@@ -51,10 +51,10 @@ module.exports = function Configuration() {
 		});
 	};
 	var setcredentials = function setcredentials() {
-		return set("Give your credentials for a Github account [username:password]? ", 'credentials');
+		return setproperty("Give your credentials for a Github account [username:password]? ", 'credentials');
 	};
 	var setaccount = function setaccount() {
-		return set("Which account would you like to analyze? ", 'account');
+		return setproperty("Which account would you like to analyze? ", 'account');
 	};
 	var getcredentials = function getcredentials() {
 		return configuration.credentials;

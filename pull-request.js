@@ -19,7 +19,7 @@ var fields = [
 
 var configuration = new Configuration();
 var csv = new CSVlogger('pulls.csv', fields);
-var csvinit = csv.init();
+csv.init();
 var gi;
 
 var reporterror = function reporterror(error) {
@@ -54,19 +54,19 @@ configuration.setfromfile()
 	for(var pulls of pullsperrepo) {
 		for(var pull of pulls) {
 			var line = {};
-			line['owner'] = pull.base.user.login;
-			line['repo'] = pull.base.repo.name;
-			line['id'] = pull.number;
-			line['author'] = pull.user.login;
-			line['state'] = pull.state;
-			line['created_at'] = pull.created_at;
-			line['closed_at'] = pull.closed_at;
-			line['merged_at'] = pull.merged_at;
-			line['updated_at'] = pull.updated_at;
-			if(pull.merged_at == null) {
-				line['merged'] = false;
+			line.owner = pull.base.user.login;
+			line.repo = pull.base.repo.name;
+			line.id = pull.number;
+			line.author = pull.user.login;
+			line.state = pull.state;
+			line.created_at = pull.created_at;
+			line.closed_at = pull.closed_at;
+			line.merged_at = pull.merged_at;
+			line.updated_at = pull.updated_at;
+			if(pull.merged_at === null) {
+				line.merged = false;
 			} else {
-				line['merged'] = true;
+				line.merged = true;
 			}
 			var commentsgi = gi.createRequest(pull.review_comments_url);
 			var commitsgi = gi.createRequest(pull.commits_url);
@@ -79,14 +79,14 @@ configuration.setfromfile()
 					var line = prdetails[0];
 					var prcomments = prdetails[1];
 					var prcommits = prdetails[2];
-					line['comments'] = prcomments.length;
-					line['commits'] = prcommits.length;
+					line.comments = prcomments.length;
+					line.commits = prcommits.length;
 					var result = [];
 					for(var key of fields) {
 						result.push(line[key]);
 					}
 					csv.pushline(result);
 				}, reporterror);
-		};
+		}
 	}
 }, reporterror);

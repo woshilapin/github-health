@@ -10,10 +10,10 @@ module.exports = function CSVlogger(path, fields) {
 			encoding: 'utf8'
 		};
 		file = fs.createWriteStream(filepath, options);
-		if(fields instanceof Array) {
-			file.write(fields.join());
-		} else if(fields instanceof String) {
-			file.write(fields);
+		if(listoffields instanceof Array) {
+			file.write(listoffields.join());
+		} else if(listoffields instanceof String) {
+			file.write(listoffields);
 		}
 		newline();
 	};

@@ -27,7 +27,7 @@ module.exports = function GithubInterface(credentials) {
 						reject(new Error(error));
 					});
 					res.on('end', function() {
-						if(body == '') {
+						if(body === '') {
 							body = '{}';
 						}
 						var json = JSON.parse(body);
