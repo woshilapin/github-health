@@ -19,7 +19,7 @@ module.exports = function CSVlogger(path, fields) {
 	};
 	var newline = function newline() {
 		file.write('\n');
-	}
+	};
 	var pushline = function pushline(line) {
 		if(line instanceof Array) {
 			file.write(line.join());
@@ -30,7 +30,7 @@ module.exports = function CSVlogger(path, fields) {
 	};
 	var end = function end() {
 		file.end();
-	}
+	};
 	return {
 		init: init,
 		pushline: pushline,

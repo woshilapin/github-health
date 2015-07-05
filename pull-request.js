@@ -24,7 +24,7 @@ var gi;
 
 var reporterror = function reporterror(error) {
 	console.error(error);
-}
+};
 
 configuration.setfromfile()
 .then(function() {
