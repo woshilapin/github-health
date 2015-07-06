@@ -12,7 +12,7 @@
 		"url": "https://about.me/woshilapin"
 	},
 	"bin": {
-		"github-health-pull": "src/pull-requests.js"
+		"github-health-pull": "src/pull-request.js"
 	},
 	"repository": {
 		"type": "git",
