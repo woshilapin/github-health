@@ -1,10 +1,10 @@
 var fs = require('fs');
 
-module.exports = function CSVlogger(path, fields) {
+module.exports = function(path, fields) {
 	var file;
 	var filepath = path;
 	var listoffields = fields;
-	var init = function init() {
+	var init = function() {
 		var options = {
 			flags: 'w',
 			encoding: 'utf8'
@@ -17,10 +17,10 @@ module.exports = function CSVlogger(path, fields) {
 		}
 		newline();
 	};
-	var newline = function newline() {
+	var newline = function() {
 		file.write('\n');
 	};
-	var pushline = function pushline(line) {
+	var pushline = function(line) {
 		if(line instanceof Array) {
 			file.write(line.join());
 		} else if(line instanceof String) {
@@ -28,7 +28,7 @@ module.exports = function CSVlogger(path, fields) {
 		}
 		newline();
 	};
-	var end = function end() {
+	var end = function() {
 		file.end();
 	};
 	return {

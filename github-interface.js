@@ -1,8 +1,8 @@
 var https = require('https');
 
 
-module.exports = function GithubInterface(credentials) {
-	var GithubRequest = function GithubRequest(path) {
+module.exports = function(credentials) {
+	var GithubRequest = function(path) {
 		var options = {
 			host: 'api.github.com',
 			method: 'GET',
@@ -13,16 +13,16 @@ module.exports = function GithubInterface(credentials) {
 				'User-Agent': 'iojs'
 			}
 		};
-		var send = function send() {
+		var send = function() {
 			return new Promise(function(resolve, reject) {
 				https.request(options, function(res) {
 					console.log(`Request to '${options.path}'`);
 					var body = '';
 					res.setEncoding('utf8');
-					res.on('data', function (chunk) {
+					res.on('data', function(chunk) {
 						body += chunk;
 					});
-					res.on('error', function (error) {
+					res.on('error', function(error) {
 						console.error(error);
 						reject(new Error(error));
 					});
@@ -60,7 +60,7 @@ module.exports = function GithubInterface(credentials) {
 			send: send
 		};
 	};
-	var createRequest = function createRequest(path) {
+	var createRequest = function(path) {
 		return new GithubRequest(path);
 	};
 	return {

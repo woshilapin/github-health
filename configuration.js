@@ -1,10 +1,10 @@
 var fs = require('fs');
 var readline = require('readline');
 
-module.exports = function Configuration() {
+module.exports = function() {
 	var configurationpath = 'health.json';
 	var configuration = {};
-	var setfromfile = function setfromfile() {
+	var setfromfile = function() {
 		return new Promise(function(resolve, reject) {
 			var options = {
 				flags: 'r',
@@ -25,7 +25,7 @@ module.exports = function Configuration() {
 			});
 		});
 	};
-	var askinput = function askinput(message) {
+	var askinput = function(message) {
 		return new Promise(function(resolve) {
 			var rl = readline.createInterface({
 				input: process.stdin,
@@ -37,7 +37,7 @@ module.exports = function Configuration() {
 			});
 		});
 	};
-	var setproperty = function setproperty(message, fieldname) {
+	var setproperty = function(message, fieldname) {
 		return new Promise(function(resolve, reject) {
 			if(configuration[fieldname] !== undefined) {
 				resolve();
@@ -46,20 +46,22 @@ module.exports = function Configuration() {
 				.then(function(fieldvalue) {
 					configuration[fieldname] = fieldvalue;
 					resolve();
+				}, function(error) {
+					reject(error);
 				});
 			}
 		});
 	};
-	var setcredentials = function setcredentials() {
+	var setcredentials = function() {
 		return setproperty("Give your credentials for a Github account [username:password]? ", 'credentials');
 	};
-	var setaccount = function setaccount() {
+	var setaccount = function() {
 		return setproperty("Which account would you like to analyze? ", 'account');
 	};
-	var getcredentials = function getcredentials() {
+	var getcredentials = function() {
 		return configuration.credentials;
 	};
-	var getaccount = function getaccount() {
+	var getaccount = function() {
 		return configuration.account;
 	};
 	return {

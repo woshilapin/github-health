@@ -22,10 +22,6 @@ var csv = new CSVlogger('pulls.csv', fields);
 csv.init();
 var gi;
 
-var reporterror = function reporterror(error) {
-	console.error(error);
-};
-
 configuration.setfromfile()
 .then(function() {
 	return configuration.setcredentials();
@@ -49,7 +45,9 @@ configuration.setfromfile()
 		}
 	}
 	return Promise.all(requests);
-}, reporterror)
+}, function(error) {
+	console.error(error);
+})
 .then(function(pullsperrepo) {
 	for(var pulls of pullsperrepo) {
 		for(var pull of pulls) {
@@ -86,7 +84,11 @@ configuration.setfromfile()
 						result.push(line[key]);
 					}
 					csv.pushline(result);
-				}, reporterror);
+				}, function(error) {
+	console.error(error);
+});
 		}
 	}
-}, reporterror);
+}, function(error) {
+	console.error(error);
+});
