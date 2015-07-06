@@ -3,7 +3,7 @@ Badge](https://www.codacy.com/project/badge/fee09c9561ef44448766ff4afcf96bfa)](h
 [![Code
 Climate](https://codeclimate.com/github/woshilapin/github-health/badges/gpa.svg)](https://codeclimate.com/github/woshilapin/github-health)
 
-= Usage =
+# Usage
 To use it, you need `iojs` installed (see
 [`nvm`](https://github.com/creationix/nvm)).
 
@@ -11,7 +11,7 @@ To use it, you need `iojs` installed (see
 iojs src/pull-request.js
 ```
 
-= Configuration =
+# Configuration
 You can run the program without configuration and it will ask you at runtime:
 * Which account you want to analyze?  For example,
   [`woshilapin`](https://github.com/woshilapin)
