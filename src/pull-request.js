@@ -85,8 +85,8 @@ configuration.setfromfile()
 					}
 					csv.pushline(result);
 				}, function(error) {
-	console.error(error);
-});
+					console.error(error);
+				});
 		}
 	}
 }, function(error) {
