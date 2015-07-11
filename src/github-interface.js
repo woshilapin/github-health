@@ -1,5 +1,17 @@
 var https = require('https');
 
+var sleep = function(delay, promise) {
+	return new Promise(function(resolve, reject) {
+		setTimeout(function() {
+			promise()
+				.then(function(result) {
+					resolve(result);
+				}, function(error) {
+					reject(error);
+				});
+		}, delay);
+	});
+};
 
 module.exports = function(credentials) {
 	var GithubRequest = function(path) {
@@ -27,12 +39,24 @@ module.exports = function(credentials) {
 						reject(new Error(error));
 					});
 					res.on('end', function() {
+						var remaining = parseInt(res.headers['x-ratelimit-remaining']);
+						if(remaining % 10 === 0) {
+							console.log(`[remains ${remaining}]`);
+						}
 						if(body === '') {
 							body = '{}';
 						}
 						var json = JSON.parse(body);
 						if(res.statusCode === 403) {
-							reject(new Error(json.message));
+							if(remaining === 0) {
+								console.log('Retry in 5 minute.');
+								return sleep(300000, function() {
+									var retrygi = new GithubRequest(options.path);
+									return retrygi.send();
+								});
+							} else {
+								reject(new Error(json.message));
+							}
 						}
 						var links = res.headers.link;
 						if(res.headers.link) {
