@@ -1,18 +1,5 @@
 var https = require('https');
 
-var sleep = function(delay, promise) {
-	return new Promise(function(resolve, reject) {
-		setTimeout(function() {
-			promise()
-				.then(function(result) {
-					resolve(result);
-				}, function(error) {
-					reject(error);
-				});
-		}, delay);
-	});
-};
-
 module.exports = function(credentials) {
 	var GithubRequest = function(path) {
 		var options = {
@@ -25,62 +12,71 @@ module.exports = function(credentials) {
 				'User-Agent': 'iojs'
 			}
 		};
+		var sleep = function(delay, promise) {
+			return new Promise(function(resolve, reject) {
+				setTimeout(function() {
+					promise()
+						.then(function(result) {
+							resolve(result);
+						}, function(error) {
+							reject(error);
+						});
+				}, delay);
+			});
+		};
+		var retry = function(path, delay) {
+			console.log(`Retry '${path}' in ${delay} seconds.`);
+			return new Promise(function(resolve) {
+				sleep(delay*1000, function() {
+					var retrygi = new GithubRequest(path);
+					resolve(retrygi.send())
+				});
+			});
+		};
+		var extractHeaderLink = function(headers, name) {
+			var regexp = new RegExp("<([^>]*)>; rel=\"" + name + "\"");
+			var link = headers.link;
+			if(link) {
+				var match = link.match(regexp);
+				if(match !== null) {
+					return match[1];
+				} else {
+					return undefined;
+				}
+			} else {
+				return undefined;
+			}
+		};
 		var send = function() {
 			return new Promise(function(resolve, reject) {
 				https.request(options, function(res) {
 					console.log(`Request to '${options.path}'`);
-					var body = '';
+					var bodystream = '';
 					res.setEncoding('utf8');
 					res.on('data', function(chunk) {
-						body += chunk;
+						bodystream += chunk;
 					});
 					res.on('error', function(error) {
 						console.error(error);
-						console.log('Retry in 5 minute.');
-						return sleep(300000, function() {
-							var retrygi = new GithubRequest(options.path);
-							return retrygi.send();
-						});
 						reject(new Error(error));
 					});
 					res.on('end', function() {
 						var remaining = parseInt(res.headers['x-ratelimit-remaining']);
-						if(remaining % 10 === 0) {
-							console.log(`[remains ${remaining}]`);
+						// If Github request limit has been reached
+						if(res.statusCode === 403 && remaining === 0) {
+							// Retry in 5 minutes
+							resolve(retry(options.path, 3000));
 						}
-						if(body === '') {
-							body = '{}';
+						if(bodystream === '') {
+							bodystream = '{}';
 						}
-						var json = JSON.parse(body);
-						if(res.statusCode === 403) {
-							if(remaining === 0) {
-								console.log('Retry in 5 minute.');
-								return sleep(300000, function() {
-									var retrygi = new GithubRequest(options.path);
-									return retrygi.send();
-								});
-							} else {
-								reject(new Error(json.message));
-							}
-						}
-						var links = res.headers.link;
-						if(res.headers.link) {
-							var matchnextpath = links.match(/<([^>]*)>; rel="next"/);
-							if(matchnextpath !== null) {
-								var nextpath = matchnextpath[1];
-								console.log(`Need more pages from '${path}'`);
-								var nextpagegi = new GithubRequest(nextpath);
-								nextpagegi.send()
-								.then(function(nextpage) {
-									var newjson = json.concat(nextpage);
-									resolve(newjson);
-								});
-							} else {
-								resolve(json);
-							}
-						} else {
-							resolve(json);
-						}
+						var body = JSON.parse(bodystream);
+						res.headers.first = extractHeaderLink(res.headers, "first");
+						res.headers.prev = extractHeaderLink(res.headers, "prev");
+						res.headers.next = extractHeaderLink(res.headers, "next");
+						res.headers.last = extractHeaderLink(res.headers, "last");
+						res.body = body;
+						resolve(res);
 					});
 				}).end();
 			});
