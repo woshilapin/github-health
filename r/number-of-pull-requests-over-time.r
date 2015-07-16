@@ -1,4 +1,5 @@
-source("Rinit");
+setwd(file.path(getwd(), ".."));
+source("r/Rinit");
 
 year <- year(data.pulls$created_at);
 month <- month(data.pulls$created_at);

@@ -1,3 +1,7 @@
+rinit_folder <- dirname(sys.frame(1)$ofile);
+functions_path <- file.path(rinit_folder, "functions.r");
+source(functions_path);
+
 data.field_types = c(
 				  "character",
 				  "character",
@@ -10,7 +14,7 @@ data.field_types = c(
 				  "integer",
 				  "integer",
 				  "logical")
-data.pulls <- read.table("pulls.csv", header=TRUE, sep=",", colClasses=data.field_types);
+data.pulls <- read.table("data/pulls.csv", header=TRUE, sep=",", colClasses=data.field_types);
 data.contributors = c(
 				 "vmassol",
 				 "Enygma2002",
@@ -22,4 +26,3 @@ data.contributors = c(
 data.pulls$duration <- data.pulls$closed_at - data.pulls$created_at;
 data.pulls$is_contrib <- (data.pulls$author %in% data.contributors)
 
-source("functions.r");
