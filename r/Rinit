@@ -1,0 +1,23 @@
+data.field_types = c(
+				  "character",
+				  "character",
+				  "integer",
+				  "character",
+				  "character",
+				  "Date",
+				  "Date",
+				  "Date",
+				  "integer",
+				  "integer",
+				  "logical")
+data.pulls <- read.table("pulls.csv", header=TRUE, sep=",", colClasses=data.field_types);
+data.contributors = c(
+				 "vmassol",
+				 "Enygma2002",
+				 "gdelhumeau",
+				 "tmortagne",
+				 "mflorea");
+
+# Add duration of a Pull Request
+data.pulls$duration <- data.pulls$closed_at - data.pulls$created_at;
+data.pulls$is_contrib <- (data.pulls$author %in% data.contributors)

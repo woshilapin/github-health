@@ -45,7 +45,6 @@ configuration.setfromfile()
 })
 .then(function(commitsperrepo) {
 	for(var commits of commitsperrepo) {
-		console.log(commits.length);
 		for(var commit of commits) {
 			var line = {};
 			var matchurl = commit.url.match(/^https:\/\/api.github.com\/repos\/(.*)\/(.*)\/commits/);
