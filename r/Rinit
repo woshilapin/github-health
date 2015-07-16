@@ -21,3 +21,5 @@ data.contributors = c(
 # Add duration of a Pull Request
 data.pulls$duration <- data.pulls$closed_at - data.pulls$created_at;
 data.pulls$is_contrib <- (data.pulls$author %in% data.contributors)
+
+source("functions.r");
