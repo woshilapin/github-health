@@ -22,6 +22,23 @@ var csv = new CSVlogger('data/pulls.csv', fields);
 csv.init();
 var gi;
 
+var parseRepos = function(response) {
+	if(response.headers.next) {
+		console.log(response.headers.next);
+		var nextpath = response.headers.next;
+		var nextpagegi = gi.createRequest(nextpath);
+		nextpagegi.send()
+			.then(parseRepos, reportError);
+	}
+	for(var repo of response.body) {
+		if(!repo.fork) {
+			var path = '/repos/' + repo.owner.login + '/' + repo.name + '/pulls?state=all';
+			var pullsgi = gi.createRequest(path);
+			pullsgi.send()
+				.then(parsePullRequests, reportError);
+		}
+	}
+};
 var parsePullRequests = function(response) {
 	if(response.headers.next) {
 		console.log(response.headers.next);
@@ -55,8 +72,8 @@ var parsePullRequests = function(response) {
 		])
 			.then(function(prdetails) {
 				var line = prdetails[0];
-				var prcomments = prdetails[1];
-				var prcommits = prdetails[2];
+				var prcomments = prdetails[1].body;
+				var prcommits = prdetails[2].body;
 				line.comments = prcomments.length;
 				line.commits = prcommits.length;
 				var result = [];
@@ -84,13 +101,4 @@ configuration.setfromfile()
 	var reposgi = gi.createRequest(path);
 	return reposgi.send();
 })
-.then(function(response) {
-	for(var repo of response.body) {
-		if(!repo.fork) {
-			var path = '/repos/' + repo.owner.login + '/' + repo.name + '/pulls?state=all';
-			var pullsgi = gi.createRequest(path);
-			pullsgi.send()
-				.then(parsePullRequests, reportError);
-		}
-	}
-}, reportError);
+.then(parseRepos, reportError);

@@ -17,6 +17,23 @@ var csv = new CSVlogger('data/commits.csv', fields);
 csv.init();
 var gi;
 
+var parseRepos = function(response) {
+	if(response.headers.next) {
+		console.log(response.headers.next);
+		var nextpath = response.headers.next;
+		var nextpagegi = gi.createRequest(nextpath);
+		nextpagegi.send()
+			.then(parseRepos, reportError);
+	}
+	for(var repo of response.body) {
+		if(!repo.fork) {
+			var path = '/repos/' + repo.owner.login + '/' + repo.name + '/commits';
+			var commitsgi = gi.createRequest(path);
+			commitsgi.send()
+				.then(parseCommits, reportError);
+		}
+	}
+};
 var parseCommits = function(response) {
 	if(response.headers.next) {
 		console.log(response.headers.next);
@@ -58,14 +75,5 @@ configuration.setfromfile()
 	var reposgi = gi.createRequest(path);
 	return reposgi.send();
 })
-.then(function(response) {
-	for(var repo of response.body) {
-		if(!repo.fork) {
-			var path = '/repos/' + repo.owner.login + '/' + repo.name + '/commits';
-			var commitsgi = gi.createRequest(path);
-			commitsgi.send()
-				.then(parseCommits, reportError);
-		}
-	}
-}, reportError
+.then(parseRepos, reportError
 )
