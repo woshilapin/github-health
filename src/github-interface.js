@@ -36,6 +36,11 @@ module.exports = function(credentials) {
 					});
 					res.on('error', function(error) {
 						console.error(error);
+						console.log('Retry in 5 minute.');
+						return sleep(300000, function() {
+							var retrygi = new GithubRequest(options.path);
+							return retrygi.send();
+						});
 						reject(new Error(error));
 					});
 					res.on('end', function() {
