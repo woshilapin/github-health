@@ -13,7 +13,7 @@ var fields = [
 
 
 var configuration = new Configuration();
-var csv = new CSVlogger('commits.csv', fields);
+var csv = new CSVlogger('data/commits.csv', fields);
 csv.init();
 var gi;
 

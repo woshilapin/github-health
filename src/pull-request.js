@@ -18,7 +18,7 @@ var fields = [
 
 
 var configuration = new Configuration();
-var csv = new CSVlogger('pulls.csv', fields);
+var csv = new CSVlogger('data/pulls.csv', fields);
 csv.init();
 var gi;
 
