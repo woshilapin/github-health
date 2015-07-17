@@ -17,6 +17,9 @@ var csv = new CSVlogger('data/commits.csv', fields);
 csv.init();
 var gi;
 
+var reportError = function(error) {
+	console.error(error);
+};
 var parseRepos = function(response) {
 	if(response.headers.next) {
 		console.log(response.headers.next);
@@ -57,9 +60,6 @@ var parseCommits = function(response) {
 		}
 		csv.pushline(result);
 	}
-};
-var reportError = function(error) {
-	console.error(error);
 };
 
 configuration.setfromfile()

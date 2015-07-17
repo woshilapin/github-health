@@ -22,6 +22,9 @@ var csv = new CSVlogger('data/pulls.csv', fields);
 csv.init();
 var gi;
 
+var reportError = function(error) {
+	console.log(error);
+};
 var parseRepos = function(response) {
 	if(response.headers.next) {
 		console.log(response.headers.next);
@@ -83,9 +86,6 @@ var parsePullRequests = function(response) {
 				csv.pushline(result);
 			}, reportError);
 	}
-};
-var reportError = function(error) {
-	console.log(error);
 };
 
 configuration.setfromfile()
