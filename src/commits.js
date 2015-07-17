@@ -7,7 +7,7 @@ var fields = [
 'repo',
 'id',
 'author',
-'date',
+'created_at',
 'comment_count'
 ];
 
