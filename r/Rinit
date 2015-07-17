@@ -2,7 +2,7 @@ rinit_folder <- dirname(sys.frame(1)$ofile);
 functions_path <- file.path(rinit_folder, "functions.r");
 source(functions_path);
 
-data.field_types = c(
+data.pulls.field_types = c(
 				  "character",
 				  "character",
 				  "integer",
@@ -14,7 +14,16 @@ data.field_types = c(
 				  "integer",
 				  "integer",
 				  "logical")
-data.pulls <- read.table("data/pulls.csv", header=TRUE, sep=",", colClasses=data.field_types);
+data.pulls <- read.table("data/pulls.csv", header=TRUE, sep=",", colClasses=data.pulls.field_types);
+data.commits.field_types = c(
+				  "character",
+				  "character",
+				  "character",
+				  "character",
+				  "Date",
+				  "integer"
+				  )
+data.commits <- read.table("data/commits.csv", header=TRUE, sep=",", colClasses=data.commits.field_types);
 data.contributors = c(
 				 "vmassol",
 				 "Enygma2002",
