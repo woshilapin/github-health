@@ -15,6 +15,7 @@ data.pulls.field_types = c(
 				  "integer",
 				  "logical")
 data.pulls <- read.table("data/pulls.csv", header=TRUE, sep=",", colClasses=data.pulls.field_types);
+data.pulls <- data.pulls[order(data.pulls$created_at, data.pulls$closed_at),]
 data.commits.field_types = c(
 				  "character",
 				  "character",
@@ -24,6 +25,7 @@ data.commits.field_types = c(
 				  "integer"
 				  )
 data.commits <- read.table("data/commits.csv", header=TRUE, sep=",", colClasses=data.commits.field_types);
+data.commits <- data.commits[order(data.commits$created_at),]
 data.contributors = c(
 				 "vmassol",
 				 "Enygma2002",
@@ -33,5 +35,12 @@ data.contributors = c(
 
 # Add duration of a Pull Request
 data.pulls$duration <- data.pulls$closed_at - data.pulls$created_at;
-data.pulls$is_contrib <- (data.pulls$author %in% data.contributors)
+data.pulls$is_contrib <- (data.pulls$author %in% data.contributors);
 
+# Add information about closed PR
+data.pulls$closed <- !is.na(data.pulls$closed_at);
+data.pulls$closed <- data.pulls$state == "closed";
+data.pulls$rejected <- (data.pulls$closed & !data.pulls$merged);
+rinit_folder <- dirname(sys.frame(1)$ofile);
+functions_path <- file.path(rinit_folder, "functions.r");
+source(functions_path);
