@@ -27,15 +27,46 @@ data.commits.field_types = c(
 data.commits <- read.table("data/commits.csv", header=TRUE, sep=",", colClasses=data.commits.field_types);
 data.commits <- data.commits[order(data.commits$created_at),]
 data.contributors = c(
-				 "vmassol",
 				 "Enygma2002",
 				 "gdelhumeau",
+				 "mflorea",
 				 "tmortagne",
-				 "mflorea");
+				 "vmassol");
+data.xwikisas = c(
+		"bandoulyes",
+		"cjdelisle",
+		"Enygma2002",
+		"evalica",
+		"flaviusx",
+		"fmancinelli",
+		"gabrielasmeria",
+		"gdelhumeau",
+		"guillaumefenollar",
+		"jbousque",
+		"jvelo",
+		"ldubost",
+		"mflorea",
+		"msmeria",
+		"mstaicu",
+		"neototo",
+		"oanat",
+		"PopescuAndreea",
+		"ppantiru",
+		"rstavro",
+		"sbaloul",
+		"sdumitriu",
+		"sorinello",
+		"tdelafosse",
+		"tmortagne",
+		"vmassol",
+		"vrachieru",
+		"woshilapin",
+		"zoubir");
 
 # Add duration of a Pull Request
 data.pulls$duration <- data.pulls$closed_at - data.pulls$created_at;
 data.pulls$is_contrib <- (data.pulls$author %in% data.contributors);
+data.pulls$is_xwikisas <- (data.pulls$author %in% data.xwikisas);
 
 # Add information about closed PR
 data.pulls$closed <- !is.na(data.pulls$closed_at);
