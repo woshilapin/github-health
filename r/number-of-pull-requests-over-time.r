@@ -29,13 +29,10 @@ row.names(pr_number_over_time.year) <- years;
 pr_number_over_time.year <- t(pr_number_over_time.year);
 pr_number_over_time.year
 
-# pr_number_over_time.year <- aggregate(created_at ~ year, data.pulls, FUN=length);
-# row.names(pr_number_over_time.year) <- pr_number_over_time.year$year;
-# pr_number_over_time.year <- pr_number_over_time.year[, c(2)];
 png(filename="graphics/number-of-pull-requests-over-time.year.png", width=800, height=600, units="px");
 year.plot <- barplot(pr_number_over_time.year, beside=TRUE, ylim=c(0,300), main="Number of Pull Requests over year", legend=c("XWiki SAS Pull Requests", "External Pull Requests"));
 total <- pr_number_over_time.year[1,] + pr_number_over_time.year[2,];
 total <- t(cbind(total, total));
 percentage.year <- paste(100 * round(pr_number_over_time.year / total, 3), " %");
 text(year.plot, pr_number_over_time.year, label=percentage.year, col="blue", pos=3, offset=.5);
-# dev.off();
+dev.off();
